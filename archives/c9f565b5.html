@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<meta name="google-site-verification" content="QKJxsyjxfIgvzDZEt-B-5NxCJl4EcWT0WnKo3b2dFCo" />
+<meta name="baidu-site-verification" content="u8BW8XmevJ" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+
+
+
+
+  <meta name="keywords" content="CMake" />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="南乡子" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="摘要: 本文记录一下 CMake 变量的定义、原理及其使用。CMake 变量包含 Normal Variables、Cache Variables。通过 set 指令可以设置两种不同的变量。也可以在 CMake 脚本中使用和设置环境变量。set(ENV{&amp;lt;variable&amp;gt;} &amp;lt;value&amp;gt;...)，本文重点讲述 CMake 脚本语言特有的两种变量。">
+<meta name="keywords" content="CMake">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMake 两种变量原理">
+<meta property="og:url" content="http://cslam.cn/archives/c9f565b5.html">
+<meta property="og:site_name" content="南乡子">
+<meta property="og:description" content="摘要: 本文记录一下 CMake 变量的定义、原理及其使用。CMake 变量包含 Normal Variables、Cache Variables。通过 set 指令可以设置两种不同的变量。也可以在 CMake 脚本中使用和设置环境变量。set(ENV{&amp;lt;variable&amp;gt;} &amp;lt;value&amp;gt;...)，本文重点讲述 CMake 脚本语言特有的两种变量。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-10-08T12:20:44.780Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMake 两种变量原理">
+<meta name="twitter:description" content="摘要: 本文记录一下 CMake 变量的定义、原理及其使用。CMake 变量包含 Normal Variables、Cache Variables。通过 set 指令可以设置两种不同的变量。也可以在 CMake 脚本中使用和设置环境变量。set(ENV{&amp;lt;variable&amp;gt;} &amp;lt;value&amp;gt;...)，本文重点讲述 CMake 脚本语言特有的两种变量。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://cslam.cn/archives/c9f565b5.html"/>
+
+
+
+
+
+  <title>CMake 两种变量原理 | 南乡子</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6c818863f955d4bcc419c22e2a7e55f8";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南乡子</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">万事到头都是梦，休休。明日黄花碟也愁。</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://cslam.cn/archives/c9f565b5.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="南乡子">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/slogo.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南乡子">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">CMake 两种变量原理</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-08T18:49:59+08:00">
+                2018-10-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/tool/" itemprop="url" rel="index">
+                    <span itemprop="name">tool</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/archives/c9f565b5.html#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/archives/c9f565b5.html" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/archives/c9f565b5.html" class="leancloud_visitors" data-flag-title="CMake 两种变量原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.5k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  14
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <hr>
+<p>摘要:</p>
+<p>本文记录一下 CMake 变量的定义、原理及其使用。CMake 变量包含 <strong>Normal Variables、Cache Variables。</strong>通过 set 指令可以设置两种不同的变量。也可以在 CMake 脚本中使用和设置环境变量。<code>set(ENV{&lt;variable&gt;} &lt;value&gt;...)</code>，本文重点讲述 CMake 脚本语言特有的两种变量。</p>
+<a id="more"></a>
+<hr>
+<p>正文：</p>
+<hr>
+<h3 id="1、两种变量的定义参考"><a href="#1、两种变量的定义参考" class="headerlink" title="1、两种变量的定义参考"></a>1、<strong>两种变量的定义<a href="https://cmake.org/cmake/help/v3.11/command/set.html" target="_blank" rel="noopener">参考</a></strong></h3><ul>
+<li><p>Normal Variables</p>
+<p>通过 <code>set(&lt;variable&gt; &lt;value&gt;... [PARENT_SCOPE])</code>这个命令来设置的变量就是 Normal Variables。例如 set(MY_VAL “666”) ，此时 MY_VAL 变量的值就是 666。 </p>
+</li>
+<li><p>Cache Variables</p>
+<p>通过 <code>set(&lt;variable&gt; &lt;value&gt;... CACHE &lt;type&gt; &lt;docstring&gt; [FORCE])</code>这个命令来设置的变量就是 Cache Variables。例如 <code>set(MY_CACHE_VAL &quot;666&quot; CACHE STRING INTERNAL)</code>，此时 MY_CACHE_VAL 就是一个 CACHE 变量。</p>
+</li>
+</ul>
+<hr>
+<h3 id="2、两种变量的作用域原理及使用"><a href="#2、两种变量的作用域原理及使用" class="headerlink" title="2、两种变量的作用域原理及使用"></a>2、<strong>两种变量的作用域原理及使用</strong></h3><hr>
+<h4 id="1、Normal-Variables"><a href="#1、Normal-Variables" class="headerlink" title="1、Normal Variables"></a><strong>1、Normal Variables</strong></h4><p>​    作用域属于整个 CMakeLists.txt 文件，当该文件包含了 <code>add_subdirectory()、include()、macro()、function()</code>语句时，会出现两种不同的效果。</p>
+<hr>
+<h5 id="1-、包含-add-subdirectory-、function-。（本质是值拷贝）"><a href="#1-、包含-add-subdirectory-、function-。（本质是值拷贝）" class="headerlink" title="(1)、包含 add_subdirectory()、function()。（本质是值拷贝）"></a>(1)、<strong>包含 add_subdirectory()、function()</strong>。（本质是值拷贝）</h5><p>假设，我们在工程根目录 CMakeLists.txt 文件中使用 add_subdirectory(src) 包含另一个 src 目录，在 src 目录中有另一个 CMakeLists.txt 文件。在终端运行的目录结构如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> tree</span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">└── src</span><br><span class="line">    └── CMakeLists.txt</span><br><span class="line"></span><br><span class="line">1 directory, 2 files</span><br></pre></td></tr></table></figure>
+<p>以根目录 CMake 文件为父目录，src 目录为子目录，此时子目录 CMake 文件会拷贝一份父目录文件的 Normal 变量。需要说明的是，我们在子目录中如果想要修改父目录 CMake 文件包含的 Normal 变量。必须通过 set(… PARENT_SCOPE) 的方式。下面通过例子来说明。</p>
+<p>在父/根目录的 CMakeLists.txt 文件内容如下:</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"父目录 CMakeLists.txt 文件"</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_VAL <span class="string">"666"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第一次在父目录 MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"><span class="keyword">add_subdirectory</span>(src) </span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第二次在父目录，MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br></pre></td></tr></table></figure>
+<p>在子目录 src/CMakeLists.txt 文件内容如下：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"进入子目录 src/CMakeLists.txt 文件"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"在子目录，MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"退出子目录"</span>)</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cmake .</span><br><span class="line">父目录 CMakeLists.txt 文件</span><br><span class="line">第一次在父目录 MY_VAL=666</span><br><span class="line">进入子目录 src/CMakeLists.txt 文件</span><br><span class="line">在子目录，MY_VAL=666</span><br><span class="line">退出子目录</span><br><span class="line">第二次在父目录，MY_VAL=666</span><br></pre></td></tr></table></figure>
+<p>从结果可以看出，在子目录 CMake 文件中可以直接使用父目录定义的 MY_VAL 变量的值 666。当在子目录 CMake 文件中修改 MY_VAL 变量值，看看在父目录中 MY_VAL 的值如何变化。下面仅仅在子目录 CMake 文件中加入一行代码 <code>set(MY_VAL &quot;777&quot;)</code>,最后的子目录 CMake 文件代码如下：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"进入子目录 src/CMakeLists.txt 文件"</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_VAL <span class="string">"777"</span>) <span class="comment"># 刚刚加入的</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"在子目录，MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"退出子目录"</span>)</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cmake .</span><br><span class="line">父目录 CMakeLists.txt 文件</span><br><span class="line">第一次在父目录 MY_VAL=666</span><br><span class="line">进入子目录 src/CMakeLists.txt 文件</span><br><span class="line">在子目录，MY_VAL=777</span><br><span class="line">退出子目录</span><br><span class="line">第二次在父目录，MY_VAL=666</span><br></pre></td></tr></table></figure>
+<p>我们发现在 src/CMakeLists.txt 中打印的 MY_VAL 的值是 777，然后退出子目录回到根目录后，打印 MY_VAL 的值仍然是 666。这就说明了：子目录的 CMakeLists.txt 文件仅仅是拷贝了一份父目录的 Normal 变量，即使在子目录 CMake 文件中修改了 MY_VAL 变量，那也只是子目录自己的变量，不是父目录的变量。因为 Normal 变量的作用域就是以 CMakeLists.txt 文件为基本单元。那么我们如何在子目录 CMake 文件中修改父目录 CMake 文件的 Normal 变量呢? 我们需要在子目录 CMakeLists.txt 文件中设置 MY_VAL 时，加上 PARENT_SCOPE 属性。即用如下代码: <code>set(MY_VAL &quot;777&quot; PARENT_SCOPE)</code>，子目录 CMakeLists.txt 文件如下：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"进入子目录 src/CMakeLists.txt 文件"</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_VAL <span class="string">"777"</span> PARENT_SCOPE) <span class="comment"># 修改处</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"在子目录，MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"退出子目录"</span>)</span><br></pre></td></tr></table></figure>
+<p>运行结果:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cmake .</span><br><span class="line">父目录 CMakeLists.txt 文件</span><br><span class="line">第一次在父目录 MY_VAL=666</span><br><span class="line">进入子目录 src/CMakeLists.txt 文件</span><br><span class="line">在子目录，MY_VAL=666</span><br><span class="line">退出子目录</span><br><span class="line">第二次在父目录，MY_VAL=777</span><br></pre></td></tr></table></figure>
+<p>可以看出在第二次回到父目录时，MY_VAL 的值已经变成了 777。<strong>同理</strong>，对于 function() 最开始的结论也适用。代码如下：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"父目录 CMakeLists.txt 文件"</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_VAL <span class="string">"666"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第一次在父目录 MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 函数定义</span></span><br><span class="line"><span class="keyword">function</span>(xyz test_VAL) <span class="comment"># 函数定义处！</span></span><br><span class="line"> <span class="keyword">set</span>(MY_VAL <span class="string">"888"</span> PARENT_SCOPE)</span><br><span class="line"> <span class="keyword">message</span>(<span class="string">"functions is MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"><span class="keyword">endfunction</span>(xyz)</span><br><span class="line"></span><br><span class="line">xyz(<span class="variable">$&#123;MY_VAL&#125;</span>) <span class="comment"># 调用函数</span></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第二次在父目录，MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br></pre></td></tr></table></figure>
+<p>运行结果:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">父目录 CMakeLists.txt 文件</span><br><span class="line">第一次在父目录 MY_VAL=666</span><br><span class="line">functions is MY_VAL=666</span><br><span class="line">第二次在父目录，MY_VAL=888</span><br></pre></td></tr></table></figure>
+<p>可以看出在该函数中使用 MY_VAL 这个变量值，其实就是一份父目录变量的值拷贝，此时打印值为 666。在 函数中修改值，那么也是用 set(${MY_VAL} 888 PARENT_SCOPE)。此时，退出函数第二次打印变量值时。该值就是在函数中修改好的值 888。 <strong>本质讲</strong>，对于 function() 而言，刚刚说到的父目录其实不是严格正确的。因为函数定义可以是在其他 .cmake 模块文件中定义的。也可以在其他 CMakeLists.txt 文件中调用，因此准确的说，这里的父目录应该改为『调用函数的地方所属的 CMakeLists.txt 』，我们做的这个实验是在根目录 CMakeLists.txt 文件中定义了函数，又在本文件中使用了。因此之前的说法理解其意思即可。对于 add_subdirectory() 而言，其实也是说调用的地方。下面的 include()、macro() 例子会涉及到，将 function() 放在一个外部的 .cmake 文件中。那里也会说明 function() 与 macro() 的不同。</p>
+<hr>
+<h5 id="2）、包含-include-、macro-（本质有点类似-c-中的-include-预处理含义）"><a href="#2）、包含-include-、macro-（本质有点类似-c-中的-include-预处理含义）" class="headerlink" title="(2）、包含 include()、macro() （本质有点类似 c 中的 #include 预处理含义）"></a>(2）、<strong>包含 include()、macro() </strong>（本质有点类似 c 中的 #include 预处理含义）</h5><p>现在在上面的根目录中加入了一个 cmake_modules 目录。目录中有一个 Findtest.cmake 文件。新的目录结构如下:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> tree</span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── cmake_modules</span><br><span class="line">│   └── Findtest.cmake</span><br><span class="line">└── src</span><br><span class="line">    └── CMakeLists.txt</span><br><span class="line"></span><br><span class="line">2 directories, 3 files</span><br></pre></td></tr></table></figure>
+<p>在根目录中的 CMakeLists.txt 文件包含的代码如下:</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"父目录 CMakeLists.txt 文件"</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_VAL <span class="string">"666"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第一次在父目录 MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 include() 文件的宏</span></span><br><span class="line">list(APPEND CMAKE_MODULE_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/cmake_modules) </span><br><span class="line"><span class="keyword">include</span>(Findtest) <span class="comment"># 从 CMAKE_MODULE_PATH 包含的路径中搜索 Findtest.cmake 文件</span></span><br><span class="line"><span class="comment">#test($&#123;MY_VAL&#125;) # 调用宏</span></span><br><span class="line"><span class="comment">#xyz($&#123;MY_VAL&#125;) # 调用函数</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#find_package(test REQUIRED) # 从 CMAKE_MODULE_PATH 包含的路径中搜索 Findtest.cmake 文件 与 include () 两者的效果是一样的！</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第二次在父目录，MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"include test=$&#123;test_VAL&#125;"</span>) </span><br><span class="line"><span class="comment">#message("macro_val=$&#123;macro_val&#125;")</span></span><br></pre></td></tr></table></figure>
+<p>cmake_modules/Findtest.cmake 文件内容如下:</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 该文件定义了一个函数以及一个宏</span></span><br><span class="line"><span class="keyword">message</span>(<span class="string">"进入 Findtest.cmake 文件"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(test_VAL <span class="string">"222"</span>) <span class="comment"># 验证根目录 CMake 文件能够访问这个变量</span></span><br><span class="line"><span class="keyword">set</span>(MY_VAL <span class="string">"000"</span>) <span class="comment"># 测试 include() 效果</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 宏定义</span></span><br><span class="line"><span class="keyword">macro</span>(test MY_VA) <span class="comment"># 定义一个宏！</span></span><br><span class="line"> <span class="keyword">set</span>(macro_val <span class="string">"1"</span>) <span class="comment"># 宏内部定义变量</span></span><br><span class="line"> <span class="keyword">message</span>(<span class="string">"macro is MY_VAL=$&#123;MY_VA&#125;"</span>)</span><br><span class="line"> <span class="keyword">set</span>(MY_VAL <span class="string">"999"</span>) <span class="comment"># 直接修改的就是调用该宏所处的文件中的 Normal 变量</span></span><br><span class="line"><span class="keyword">endmacro</span>(test)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 函数定义</span></span><br><span class="line"><span class="keyword">function</span>(xyz test_VAL)</span><br><span class="line"> <span class="keyword">set</span>(MY_VAL <span class="string">"888"</span> PARENT_SCOPE)  <span class="comment"># 修改 调用者的 变量</span></span><br><span class="line"> <span class="keyword">message</span>(<span class="string">"function is MY_VAL=$&#123;MY_VAL&#125;"</span>)</span><br><span class="line"><span class="keyword">endfunction</span>(xyz)</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cmake .</span><br><span class="line">父目录 CMakeLists.txt 文件</span><br><span class="line">第一次在父目录 MY_VAL=666</span><br><span class="line">进入 Findtest.cmake 文件</span><br><span class="line">第二次在父目录，MY_VAL=000</span><br><span class="line">include test=222</span><br></pre></td></tr></table></figure>
+<p>从结果可以看出，include() 内部是可以修改调用者 MY_VAL 变量。include() 包含的文件内定义的变量 test_VAL，也可以在调用 include() 的 CMakeLists.txt 文件中直接访问，同样的对于 macro() 也适用，在根目录 CMake 文件中调用宏，即取消 test(${MY_VAL}) 以及 message(“macro_val=${macro_val}”) 部分的注释，此时最后输出结果 ：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cmake .</span><br><span class="line">父目录 CMakeLists.txt 文件</span><br><span class="line">第一次在父目录 MY_VAL=666</span><br><span class="line">进入 Findtest.cmake 文件</span><br><span class="line">macro is MY_VAL=000</span><br><span class="line">第二次在父目录，MY_VAL=999</span><br><span class="line">include test=222</span><br><span class="line">macro_val=1</span><br></pre></td></tr></table></figure>
+<p>可以看出，这次输出的结果在第二次进入父目录后，MY_VAL 变量的值就是 999 了。注意到在根目录中 CMakeLists.txt 中 注释语句中有一个 find_package() ，这个和 include() 其实都是一样的结果。</p>
+<p><strong>总结</strong>:</p>
+<p>结合 include() 、macro()  最后结果，能够得出一个结论：通过 include() 和 macro() 相当于把这两部分包含的代码直接加入根目录 CMakeLists.txt 文件中去执行，相当于他们是一个整体。因此变量直接都是互通的。这就有点像 C/C++ 中的 #include 包含头文件的预处理过程了。这一点其实与刚开始讲的 function() 、add_subdirectory() 完全不同，在函数以及 add_subdirectory() 中，他们本身就是一个不同的作用域范围，仅仅通过拷贝调用者的 Normal 值(仅仅在调用 add_subdirectory() / function() 之前的 Normal 变量)，如果要修改调用者包含的 Normal 变量，那么只能通过 <code>set(MY_VAL &quot;某个值&quot; PARENT_SCOPE)</code>注明我们修改的是调用者 Normal 值。虽然在 C/C++ 中，可以通过指针的方式，通过函数可以修改外部变量值，但是在 CMake 脚本语言中 function() 虽然能够传入形式参数，但是者本质上就是 C/C++ 中的值拷贝。而不是引用。上面所说的 Normal 变量其实就是一个局部变量。</p>
+<hr>
+<h4 id="2、Cache-Variables"><a href="#2、Cache-Variables" class="headerlink" title="2、Cache Variables"></a>2、<strong>Cache Variables</strong></h4><p>相当于一个全局变量，我们在同一个 cmake 工程中都可以使用。Cache 变量有以下几点说明:</p>
+<ul>
+<li>Cache 变量 CMAKE_INSTALL_PREFIX 默认值是 /usr/local (可以在生成的 CMakeCache.txt 文件中查看)，这时候如果我们 在某个 CMakeLists.txt 中，仍然使用 set(CMAKE_INSTALL_PREFIX “/usr”)，那么此时我们 install 的时候，CMake 以后面的 /usr  作为 CMAKE_INSTALL_PREFIX 的值，这是因为 CMake 规定，有一个与 Cache 变量同名的 Normal 变量出现时，后面使用这个变量的值都是以 Normal 为准，如果没有同名的 Normal 变量，CMake 才会自动使用 Cache 变量。 </li>
+<li>所有的 Cache 变量都会出现在 CMakeCache.txt 文件中。这个文件是我们键入 <code>cmake .</code>命令后自动出现的文件。打开这个文件发现，CMake 本身会有一些默认的全局 Cache 变量。例如：CMAKE_INSTALL_PREFIX、CMAKE_BUILD_TYPE、CMAKE_CXX_FLAGSS 等等。可以自行查看。当然，我们自己定义的 Cache 变量也会出现在这个文件中。Cache 变量定义格式为 <code>set(&lt;variable&gt; &lt;value&gt; CACHE STRING INTERNAL)</code>。这里的 <code>STRING</code>可以替换为 <code>BOOL</code> <code>FILEPATH</code> <code>PATH</code> ，但是要根据前面 value 类型来确定。<a href="https://cmake.org/cmake/help/v3.11/command/set.html#set-cache-entry" target="_blank" rel="noopener">参考</a>。</li>
+<li>修改 Cache 变量。可以通过 <code>set(&lt;variable&gt; &lt;value&gt; CACHE INSTERNAL FORCE)</code>，另一种方式是直接在终端中使用 <code>cmake -D var=value ..</code>来设定默认存在的CMake Cache 变量。</li>
+</ul>
+<p>下面通过一个例子来说明以上三点:</p>
+<p>首先看一下目录树结构:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> tree</span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">└── src</span><br><span class="line">    └── CMakeLists.txt</span><br><span class="line"></span><br><span class="line">1 directory, 2 files</span><br></pre></td></tr></table></figure>
+<p>根目录 CMakeLists.txt 文件内容如下:</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_GLOBAL_VAR <span class="string">"666"</span> CACHE <span class="keyword">STRING</span> INTERNAL )</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第一次在父目录 CMAKE_INSTALL_PREFIX=$&#123;CMAKE_INSTALL_PREFIX&#125;"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第一次在父目录 MY_GLOBAL_VAR=$&#123;MY_GLOBAL_VAR&#125;"</span>)</span><br><span class="line"><span class="keyword">add_subdirectory</span>(src)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第二次在父目录 CMAKE_INSTALL_PREFIX=$&#123;CMAKE_INSTALL_PREFIX&#125;"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第二次在父目录 MY_GLOBAL_VAR=$&#123;MY_GLOBAL_VAR&#125;"</span>)</span><br><span class="line"><span class="keyword">set</span>(CMAKE_INSTALL_PREFIX <span class="string">"--&gt;usr"</span> )</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第三次在父目录 CMAKE_INSTALL_PREFIX=$&#123;CMAKE_INSTALL_PREFIX&#125;"</span>)</span><br></pre></td></tr></table></figure>
+<p>src/CMakeLists.txt 文件内容如下:</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"子目录,CMAKE_INSTALL_PREFIX=$&#123;CMAKE_INSTALL_PREFIX&#125;"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"子目录,MY_GLOBAL_VAR=$&#123;MY_GLOBAL_VAR&#125;"</span>)</span><br><span class="line"><span class="keyword">set</span>(CMAKE_INSTALL_PREFIX <span class="string">"/usr"</span> CACHE <span class="keyword">STRING</span> INTERNAL FORCE)</span><br><span class="line"><span class="keyword">set</span>(MY_GLOBAL_VAR <span class="string">"777"</span> CACHE <span class="keyword">STRING</span> INTERNAL FORCE )</span><br></pre></td></tr></table></figure>
+<p>运行结果:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cmake .</span><br><span class="line">第一次在父目录 CMAKE_INSTALL_PREFIX=/usr/local</span><br><span class="line">第一次在父目录 MY_GLOBAL_VAR=666</span><br><span class="line">子目录,CMAKE_INSTALL_PREFIX=/usr/local</span><br><span class="line">子目录,MY_GLOBAL_VAR=666</span><br><span class="line">第二次在父目录 CMAKE_INSTALL_PREFIX=/usr</span><br><span class="line">第二次在父目录 MY_GLOBAL_VAR=777</span><br><span class="line">第三次在父目录 CMAKE_INSTALL_PREFIX=--&gt;usr</span><br></pre></td></tr></table></figure>
+<p><em>程序说明</em>：首先在根目录中打印一下当前的 Cache 变量 CMAKE_INSTALL_PREFIX 值，主要看看默认值是什么，然后在子目录 src/CMakeLists.txt 中再次打印和修改该 Cache 值，目的是熟悉修改全局 Cache 变量，当返回根目录 CMakeLists.txt 文件中再次执行第二次打印该 Cache 值时，主要看一看在子目录中修改后的效果。接着在根目录中设定一个 CMAKE_INSTALL_PREFIX 的 Normal 同名变量，此时第三次打印 CMAKE_INSTALL_PREFIX 的值，此时是为了证明，当有与 Cache 同名的 Normal 变量出现时，CMake 会优先使用 Normal 属性的值。通过设定 MY_GLOBAL_VAR 主要是为了说明可以自己设定全局 Cache 变量。最后的结果如上面显示，当我们再次执行 <code>cmake .</code> 的时候，程序结果如下:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> cmake .</span><br><span class="line">第一次在父目录 CMAKE_INSTALL_PREFIX=/usr</span><br><span class="line">第一次在父目录 MY_GLOBAL_VAR=777</span><br><span class="line">子目录,CMAKE_INSTALL_PREFIX=/usr</span><br><span class="line">子目录,MY_GLOBAL_VAR=777</span><br><span class="line">第二次在父目录 CMAKE_INSTALL_PREFIX=/usr</span><br><span class="line">第二次在父目录 MY_GLOBAL_VAR=777</span><br><span class="line">第三次在父目录 CMAKE_INSTALL_PREFIX=--&gt;usr</span><br></pre></td></tr></table></figure>
+<p>可以发现第一次在父目录打印 CMAKE_INSTALL_PREFIX 和 MY_GOLBAL_VAR 时，他们的结果是上次<code>cmake .</code>后生成的值，存储在 CMakeCache.txt 中，自己可以找到，解决方案就是可以把 CMakeCache.txt 文件删除，然后在 <code>cmake .</code>我们以后在实际使用时要注意这个坑。对于修改 Cache 变量的另一种方式就是<code>cmake -D CMAKE_INSTALL_PREFIX=/usr</code>。可以自己验证。这里说一个<strong>重要的点</strong>，就是在终端中输入的 <code>cmake -D var=value .</code> 如果 CMake 中默认有这个 var Cache 变量，那么此时就是赋值，没有的话，CMake 就会默认创建了一个全局 Cache 变量然后赋值。(tips: <code>$CACHE{VAR}</code>表示获取 CACHE 缓存变量的值)。例子如下:(目录结构同上)</p>
+<p>根目录 CMakeLists.txt :</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_GLOBAL_VAR <span class="string">"666"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第一次在父目录 MY_GLOBAL_VAR=$CACHE&#123;MY_GLOBAL_VAR&#125;"</span>)</span><br><span class="line"><span class="keyword">add_subdirectory</span>(src)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第二次在父目录局部 MY_GLOBAL_VAR=$&#123;MY_GLOBAL_VAR&#125;"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"第二次在父目录全局 MY_GLOBAL_VAR=$CACHE&#123;MY_GLOBAL_VAR&#125;"</span>)</span><br></pre></td></tr></table></figure>
+<p>src/CMakeLists.txt :</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.10</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"子目录,MY_GLOBAL_VAR=$&#123;MY_GLOBAL_VAR&#125;"</span>)</span><br><span class="line"><span class="keyword">set</span>(MY_GLOBAL_VAR <span class="string">"777"</span> CACHE <span class="keyword">STRING</span> INTERNAL FORCE )</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">第一次在父目录 MY_GLOBAL_VAR=8</span><br><span class="line">子目录,MY_GLOBAL_VAR=666</span><br><span class="line">第二次在父目录局部 MY_GLOBAL_VAR=666</span><br><span class="line">第二次在父目录全局 MY_GLOBAL_VAR=777</span><br></pre></td></tr></table></figure>
+<p>有了上面的基础，相信这个例子很快能看明白。</p>
+<hr>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考:"></a><strong>参考:</strong></h3><p>1、<a href="https://stackoverflow.com/questions/31037882/whats-the-cmake-syntax-to-set-and-use-variables/31044116#31044116" target="_blank" rel="noopener">https://stackoverflow.com/questions/31037882/whats-the-cmake-syntax-to-set-and-use-variables/31044116#31044116</a></p>
+<p>2、<a href="https://stackoverflow.com/questions/3249459/for-the-cmake-include-command-what-is-the-difference-between-a-file-and-a-mod" target="_blank" rel="noopener">https://stackoverflow.com/questions/3249459/for-the-cmake-include-command-what-is-the-difference-between-a-file-and-a-mod</a></p>
+<p>3、<a href="https://cmake.org/cmake/help/v3.11/command/set.html#set" target="_blank" rel="noopener">https://cmake.org/cmake/help/v3.11/command/set.html#set</a></p>
+
+      
+    </div>
+    
+    
+    
+<div>
+  
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------Thank you for reading this article!-------------</div>
+    
+</div>
+
+  
+</div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="南乡子 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    南乡子
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://cslam.cn/archives/c9f565b5.html" title="CMake 两种变量原理">http://cslam.cn/archives/c9f565b5.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/cmake/" rel="tag"><i class="fa fa-tag"></i> cmake</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/archives/d87f7e0c.html" rel="next" title="test">
+                <i class="fa fa-chevron-left"></i> test
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/slogo.png"
+                alt="南乡子" />
+            
+              <p class="site-author-name" itemprop="name">南乡子</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/logogcj" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ncuneugcj/" target="_blank" title="博客园">
+                      
+                        <i class="fa fa-fw fa-globe"></i>博客园</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="" title="待定" target="_blank" rel="external nofollow">待定</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、两种变量的定义参考"><span class="nav-text">1、两种变量的定义参考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、两种变量的作用域原理及使用"><span class="nav-text">2、两种变量的作用域原理及使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、Normal-Variables"><span class="nav-text">1、Normal Variables</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-、包含-add-subdirectory-、function-。（本质是值拷贝）"><span class="nav-text">(1)、包含 add_subdirectory()、function()。（本质是值拷贝）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2）、包含-include-、macro-（本质有点类似-c-中的-include-预处理含义）"><span class="nav-text">(2）、包含 include()、macro() （本质有点类似 c 中的 #include 预处理含义）</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、Cache-Variables"><span class="nav-text">2、Cache Variables</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考:</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">南乡子</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io" rel="external nofollow">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next" rel="external nofollow">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'XmTleWfeqhrSuD5MHzlMp1cw-gzGzoHsz',
+        appKey: '12c0HQYoyODdOvMzFCFlOuP0',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('10');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("uWSb1B6dc2jREA4H0fk3w5Vd-gzGzoHsz", "4ylUH4GRw6HQkvnzvQTXkSit");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+
+<!-- 默认浅蓝色背景-->
+<script type="text/javascript" src="/js/src/particle.js" count="90" zindex="-2" opacity="0.7" color="0,104,183"></script>
+
+<!-- 默认的灰色背景-- >
+<!script type="text/javascript" src="/js/src/particle.js"><!/script>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/love.js"></script>
+
+
+</html>

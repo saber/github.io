@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://cslam.cn/"/>
-  <updated>2018-09-22T02:52:08.816Z</updated>
+  <updated>2018-10-08T12:20:44.780Z</updated>
   <id>http://cslam.cn/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>CMake 两种变量原理</title>
+    <link href="http://cslam.cn/archives/c9f565b5.html"/>
+    <id>http://cslam.cn/archives/c9f565b5.html</id>
+    <published>2018-10-08T10:49:59.000Z</published>
+    <updated>2018-10-08T12:20:44.780Z</updated>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;摘要:&lt;/p&gt;
+&lt;p&gt;本文记录一下 CMake 变量的定义、原理及其使用。CMake 变量包含 &lt;strong&gt;Normal Variables、Cache Variables。&lt;/strong&gt;通过 set 指令可以设置两种不同的变量。也可以在 CMake 脚本中使用和设置环境变量。&lt;code&gt;set(ENV{&amp;lt;variable&amp;gt;} &amp;lt;value&amp;gt;...)&lt;/code&gt;，本文重点讲述 CMake 脚本语言特有的两种变量。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="linux" scheme="http://cslam.cn/categories/linux/"/>
+    
+      <category term="tool" scheme="http://cslam.cn/categories/linux/tool/"/>
+    
+    
+      <category term="cmake" scheme="http://cslam.cn/tags/cmake/"/>
+    
+  </entry>
   
   <entry>
     <title>test</title>

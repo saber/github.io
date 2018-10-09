@@ -121,7 +121,7 @@
 
 
 
-  <meta name="keywords" content="slam,三维重建,人工智能，C++，python" />
+  <meta name="keywords" content="cmake" />
 
 
 
@@ -134,17 +134,20 @@
 
 
 
-<meta name="description" content="SLAM | 人工智能 | 编程">
-<meta name="keywords" content="slam,三维重建,人工智能，C++，python">
-<meta property="og:type" content="website">
-<meta property="og:title" content="南乡子">
-<meta property="og:url" content="http://cslam.cn/index.html">
+<meta name="description" content="摘要: 本文讲述了 Ceres 的基本安装，以及涉及到 cmake 容易出错的知识点 find_package() 使用，以及多版本 Ceres、OpenCV 使用的基本原理。">
+<meta name="keywords" content="cmake">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ubuntu16.04 Ceres 安装及 find_package() 命令使用原理">
+<meta property="og:url" content="http://cslam.cn/archives/7dcb4bb9.html">
 <meta property="og:site_name" content="南乡子">
-<meta property="og:description" content="SLAM | 人工智能 | 编程">
+<meta property="og:description" content="摘要: 本文讲述了 Ceres 的基本安装，以及涉及到 cmake 容易出错的知识点 find_package() 使用，以及多版本 Ceres、OpenCV 使用的基本原理。">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://cslam.cn/archives/7dcb4bb9/1-cmake.png">
+<meta property="og:updated_time" content="2018-10-09T11:07:45.687Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="南乡子">
-<meta name="twitter:description" content="SLAM | 人工智能 | 编程">
+<meta name="twitter:title" content="ubuntu16.04 Ceres 安装及 find_package() 命令使用原理">
+<meta name="twitter:description" content="摘要: 本文讲述了 Ceres 的基本安装，以及涉及到 cmake 容易出错的知识点 find_package() 使用，以及多版本 Ceres、OpenCV 使用的基本原理。">
+<meta name="twitter:image" content="http://cslam.cn/archives/7dcb4bb9/1-cmake.png">
 
 
 
@@ -174,13 +177,13 @@
 
 
 
-  <link rel="canonical" href="http://cslam.cn/"/>
+  <link rel="canonical" href="http://cslam.cn/archives/7dcb4bb9.html"/>
 
 
 
 
 
-  <title>南乡子</title>
+  <title>ubuntu16.04 Ceres 安装及 find_package() 命令使用原理 | 南乡子</title>
   
 
 
@@ -209,8 +212,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -357,9 +359,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -389,9 +391,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/archives/7dcb4bb9.html" itemprop="url">ubuntu16.04 Ceres 安装及 find_package() 命令使用原理</a></h2>
+          <h2 class="post-title" itemprop="name headline">ubuntu16.04 Ceres 安装及 find_package() 命令使用原理</h2>
         
 
         <div class="post-meta">
@@ -515,18 +515,53 @@
       
 
       
-        
-          <hr>
+        <hr>
 <p>摘要:</p>
 <p>本文讲述了 Ceres 的基本安装，以及涉及到 cmake 容易出错的知识点 find_package() 使用，以及多版本 Ceres、OpenCV 使用的基本原理。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/archives/7dcb4bb9.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
+<a id="more"></a>
+<p>正文:</p>
+<hr>
+<h4 id="1、安装相应的依赖"><a href="#1、安装相应的依赖" class="headerlink" title="1、安装相应的依赖"></a>1、安装相应的依赖</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> CMake</span><br><span class="line">sudo apt-get install cmake</span><br><span class="line"><span class="meta">#</span> google-glog + gflags</span><br><span class="line">sudo apt-get install libgoogle-glog-dev</span><br><span class="line"><span class="meta">#</span> BLAS &amp; LAPACK</span><br><span class="line">sudo apt-get install libatlas-base-dev</span><br><span class="line"><span class="meta">#</span> Eigen3</span><br><span class="line">sudo apt-get install libeigen3-dev</span><br><span class="line"><span class="meta">#</span> SuiteSparse and CXSparse (optional)</span><br><span class="line"><span class="meta">#</span> - If you want to build Ceres as a *static* library (the default)</span><br><span class="line"><span class="meta">#</span>   you can use the SuiteSparse package in the main Ubuntu package</span><br><span class="line"><span class="meta">#</span>   repository:</span><br><span class="line">sudo apt-get install libsuitesparse-dev</span><br></pre></td></tr></table></figure>
+<h4 id="2、编译安装（Ceres-有一些编译选项可参考官网）"><a href="#2、编译安装（Ceres-有一些编译选项可参考官网）" class="headerlink" title="2、编译安装（Ceres 有一些编译选项可参考官网）"></a>2、编译安装（Ceres 有一些编译选项可参考官网）</h4><h5 id="1-、默认路径-选项安装（标准路径）"><a href="#1-、默认路径-选项安装（标准路径）" class="headerlink" title="(1)、默认路径/选项安装（标准路径）"></a>(1)、默认路径/选项安装（标准路径）</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir build</span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>此时直接 <code>find_package(Ceres)</code>即可找到该库。</p>
+<h5 id="2-、指定路径-选项安装（非标准路径）"><a href="#2-、指定路径-选项安装（非标准路径）" class="headerlink" title="(2)、指定路径/选项安装（非标准路径）"></a>(2)、指定路径/选项安装（非标准路径）</h5><p>这里的选项，可以参考给定的 ceres 官网，下面仅以指定安装目录为例，也称为局部安装，适用于多个安装版本。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir build </span><br><span class="line">cd build</span><br><span class="line">cmake -D CMAKE_INSTALL_PREFIX="/some/where/local"  ..</span><br><span class="line">make -j4</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<p>此时在 CMakeLists.txt 中使用 <code>find_package(Ceres REQUIRED PATHS &quot;/some/where/local/ &quot;)</code>才会找到 Ceres 库的头文件、库文件。</p>
+<p><strong>注意</strong>: 这种安装方式可以适用于多版本 Ceres 的使用，如果安装了两个 Ceres 在不同的目录中，那么在使用的过程中，我们只要在 <code>find_package( )</code> 中 PATHS 后面指定其中一个版本的安装路径即可。</p>
+<h5 id="3-、非标准安装的另一种替代品-ceres-特有的选项"><a href="#3-、非标准安装的另一种替代品-ceres-特有的选项" class="headerlink" title="(3)、非标准安装的另一种替代品(ceres 特有的选项)"></a>(3)、非标准安装的另一种替代品(ceres 特有的选项)</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir build</span><br><span class="line">cd build</span><br><span class="line">cmake -D EXPORT_BUILD_DIR=ON ..</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure>
+<p>因为默认情况下，Ceres 安装到系统默认路径/标准路径，然后才可以通过 find_package 查找到。对于 <code>export( PACKAGE Ceres )</code>，这种方式会让 HOME 目录下的 .cmake 中出现 packages/Ceres 文件夹，在 Ceres 文件夹里有一个文件。该文件记录了包含 CeresConfig.cmake 的地址，一般是编译 Ceres 的原始目录地址，比如这里的 build 目录所在的绝对路径，然后 cmake 会根据该文件提供的路径找到 CeresConfig.cmake 文件，进而利用 CeresConfig.cmake 中的语句，找到 Ceres 库的头文件和库文件。这个是 cmake 特有的搜索方式，参考<a href="https://cmake.org/cmake/help/v3.2/manual/cmake-packages.7.html#user-package-registry" target="_blank" rel="noopener"> user’s local CMake package registry</a>。接下来就可以直接在 CMakeLists.txt 中 <code>find_package(Ceres REQUIRED)</code> 了。这部分会在『 推广』部分再次提到。Ceres 库本身会通过 EXPORT_BUILD_DIR=ON 开启这种方式。</p>
+<h5 id="4-、通用的方式-仅编译不安装，适合多版本"><a href="#4-、通用的方式-仅编译不安装，适合多版本" class="headerlink" title="(4)、通用的方式(仅编译不安装，适合多版本)"></a>(4)、通用的方式(仅编译不安装，适合多版本)</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir build </span><br><span class="line">cd build</span><br><span class="line">cmake ..</span><br><span class="line">make -j4</span><br></pre></td></tr></table></figure>
+<p>通过上面前三种方式可以了解到，find_package() 本质上是在查找 CeresConfig.cmake 这个文件，前三种方式使用了不同的 cmake 搜索路径，我们也可以直接在 CMakeLists.txt 中加上 <code>set(Ceres_DIR &quot;包含 CeresConfig.cmake文件的绝对路径，一般编译后的文件夹中&quot;)</code>，然后在 <code>find_package(Ceres)</code>，CMake 就会自动的在这个路径下查找执行 CeresConfig.cmake 文件，之后这个 Ceres 库我们就可以使用了。即使多个版本，我们只要把上面 set 语句的路径部分替换一下就能使用不同版本 Ceres了。</p>
+<h5 id="5-、总结"><a href="#5-、总结" class="headerlink" title="(5)、总结"></a>(5)、总结</h5><p>为了更好的移植 CMakeLists.txt 代码，也就是假设别人使用的是第一种安装方式。即安装到了系统的默认路径，那么我们在 CMakeLists.txt 中只能写 <code>find_package(Ceres Required)</code>，这样一来，我们最好做的就是按照 (3) 方式，也就是在 home 目录下 .cmake/packages 文件中自动出现 Ceres 文件夹，然后里面的文件中写上了含有 CeresConfig.cmake 文件的绝对地址。如果我们有多个 Ceres 编译好的源码版本，我们可以在 .cmake/packages/Ceres /xxx_filename 文件中修改为不同 Ceres 源码版本目录地址，这样就可以使用不同的 Ceres 版本了。当发布代码的时候，其他人使用不必做任何修改即可运行。</p>
+<h4 id="3、推广"><a href="#3、推广" class="headerlink" title="3、推广"></a>3、推广</h4><p>对于 slam 常用的 Pangolin 、Sophus 库都是只编译即可。因为在他们的 CMakeLists.txt 中都有 <code>export(PACKAGE Sopus/Pangolin )</code>，然后 cmake 会自动将包含 SopusConfig.cmake 和 PangolinConfig.cmake 文件的路径分别放到 ./cmake/packages/Sophus/xxx_filename 和 .cmake/packages/Pangolin/xxx_filename，然后系统会自动找到。这种方式其实我们可以推广到其他的库，比如 OpenCV 库，我们可以仅编译 OpenCV 的源码不安装。然后在 .cmake/packages/ 中建立 OpenCV 文件夹和一个任意名字的文件，里面写上 OpenCV 源码中包含 OpenCVConfig.cmake 文件的目录地址， 一般是 build 目录，下面列出 .cmake/packages 文件夹下的一些库。</p>
+<img src="/archives/7dcb4bb9/1-cmake.png">
+<p>需要<strong>注意</strong>:<font color="green">这种方式只适用于源码库在编译后提供了 xxxConfig.cmake 文件。</font>这种方式属于 Config 模式。对于经常用到的 g2o 库，因为库的作者没有提供 G2OConfig.cmake 文件。所以没法用这种方式。只能用 Module 模式，这在『 第 4 部分』会讲到。</p>
+<h4 id="4、技巧"><a href="#4、技巧" class="headerlink" title="4、技巧"></a>4、技巧</h4><p>现在简单说一下 <code>find_package()</code>命令常用的查找技巧，首先我们要知道 <code>find_package()</code> 就是为了找到库的头文件和库文件。然而包含库的头文件和库文件的变量都在 Findxxx.cmake 或者 xxxConfig.cmake 中定义着，所以我们只要找到当中的一种  .cmake 文件即可。然后执行这个 .cmake 文件，我们就能得到库来使用。对于 cmake 而言，有两种查找方式。下面分别详细介绍。</p>
+<h5 id="1-、Module-模式-查找Findxxx-cmake-文件"><a href="#1-、Module-模式-查找Findxxx-cmake-文件" class="headerlink" title="(1)、Module 模式(查找Findxxx.cmake 文件)"></a>(1)、Module 模式(查找Findxxx.cmake 文件)</h5><p>CMake 会优先搜索 CMAKE_MODULE_PATH 指定的路径，然后搜索自己自带的 Modules 路径。所以一般来说，最常用就是在自己工程的 CMakeLists.txt 文件中更改 CMAKE_MODULE_PATH 这个变量值，或者把包含 Findxxx.cmake 文件的路径附加到这个变量中。之后就可以使用 <code>find_package()</code> 查找到对应的库。两种方式对应如下代码：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(CMAKE_MODULE_PATH <span class="variable">$&#123;CMAKE_MODULE_PATH&#125;</span> <span class="variable">$&#123;CMAKE_SOURCE_DIR&#125;</span>/cmake_modules/<span class="string">") # 后面这个路径就是在自己的工程目录中添加一个 cmake_modules 文件</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"># 一般推荐使用这个方式添加</span></span><br><span class="line"><span class="string">LIST(APPEND CMAKE_MODULE_PATH $&#123;PROJECT_SOURCE_DIR&#125;/cmake_modules)</span></span><br></pre></td></tr></table></figure>
+<p> 对于 CMake 本身自带的模块路径，我们没必要添加 Findxxx.cmake 文件到其中。只要利用好 CMake 为我们提供的 CMAKE_MODULE_PATH 这个变量即可。</p>
+<h5 id="2-、Config-模式-查找-xxxConfig-cmake-文件）"><a href="#2-、Config-模式-查找-xxxConfig-cmake-文件）" class="headerlink" title="(2)、Config 模式(查找 xxxConfig.cmake 文件）"></a>(2)、Config 模式(查找 xxxConfig.cmake 文件）</h5><p>这个文件是库的作者提供的，或者你看明白库作者写的 CMakeLists.txt 文件后，修改生成 xxxConfig.cmake 文件)，上面讲解的 Ceres 安装方式就是利用这种模式。CMake 会优先搜索 xxx_DIR 指定的路径，然后第二优先级才是搜索 /usr/lib/cmake/xxx/ 中对应的xxxConfig.cmake 文件。因此最常使用的做法，指定 xxx_DIR 到包含 xxxConfig.cmake 文件的路径。下面是最常用的命令。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(xxx_DIR <span class="string">"dir"</span>) <span class="comment"># dir 是包含 xxxConfig.cmake 文件的路径 </span></span><br><span class="line"><span class="keyword">find_package</span>()</span><br></pre></td></tr></table></figure>
+<h5 id="3-、总结"><a href="#3-、总结" class="headerlink" title="(3)、总结"></a>(3)、总结</h5><p>可以看出，CMake 提供了灵活的查找库的方式。不论是 Config 模式还是 Module 模式，我们都可以自己定义包含 .cmake 文件的路径，然后用 <code>find_package()</code> 来查找。当然在第 2 点总结部分已经说明，对于 Config 模式，我们就用第 2 点总结推荐的方法。对于一些库，作者没有提供 xxxConfig.cmake 文件，只有 Findxxx.cmake 文件，那么我们只能用 Module 模式，然后推荐用 <code>LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)</code>，把当前工程用到的 .cmake 文件放在 cmake_modules 文件夹中。这样我们就可以顺利使用 find_package() 查找使用库了。上面介绍的仅仅是 <code>find_package()</code> 经常使用的方法，更进一步介绍可参考 <a href="https://cmake.org/cmake/help/v3.0/command/find_package.html" target="_blank" rel="noopener">cmake 官网</a>，</p>
+<h4 id="5、拓展"><a href="#5、拓展" class="headerlink" title="5、拓展"></a>5、拓展</h4><p>对于刚刚『 第 3 部分』提到的 export 导出库，可以有如下的例子，我们以 Sophus 库为例。Sophus 库在 CMakeLists.txt 里面开始设定了 Sophus_INCLUDE_DIR、Sophus_LIBRARIES 变量，然后通过 <code>configure_file()</code> 语句根据 SophusConfig.cmake.in 文件生成了 SophusConfig.cmake 文件。命令如下:</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CONFIGURE_FILE</span>( <span class="variable">$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;</span>/SophusConfig.cmake.in</span><br><span class="line">    <span class="variable">$&#123;CMAKE_CURRENT_BINARY_DIR&#125;</span>/SophusConfig.cmake @ONLY IMMEDIATE ) <span class="comment">#  @only 表示在 SophusConfig.cmake.in 中只有 @var@ 会被替代，而 $&#123;var&#125; 这种不会被替代。</span></span><br><span class="line"><span class="keyword">export</span>( PACKAGE Sophus ) <span class="comment"># 将当前目录地址导出到 .cmake/packages/Sophus/xxxfilename 里面</span></span><br></pre></td></tr></table></figure>
+<p><code>configure_file()</code> 的详细用法参考<a href="https://cmake.org/cmake/help/v3.10/command/configure_file.html" target="_blank" rel="noopener">这里</a>。上面这句简单解释就是将前面的 SophusConfig.cmake.in 最后通过 CMakeLists.txt 文件的一些变量替换，最后生成了 SophusConfig.cmake 文件。下面分别列出原始文件以及替换生成的文件。</p>
+<ul>
+<li>原始文件 SophusConfig.cmake.in</li>
+</ul>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">################################################################################</span></span><br><span class="line"><span class="comment"># Sophus source dir</span></span><br><span class="line"><span class="keyword">set</span>( Sophus_SOURCE_DIR <span class="string">"@CMAKE_CURRENT_SOURCE_DIR@"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">################################################################################</span></span><br><span class="line"><span class="comment"># Sophus build dir</span></span><br><span class="line"><span class="keyword">set</span>( Sophus_DIR <span class="string">"@CMAKE_CURRENT_BINARY_DIR@"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">################################################################################</span></span><br><span class="line"><span class="keyword">set</span>( Sophus_INCLUDE_DIR  <span class="string">"@Sophus_INCLUDE_DIR@"</span> )</span><br><span class="line"><span class="keyword">set</span>( Sophus_INCLUDE_DIRS  <span class="string">"@Sophus_INCLUDE_DIR@"</span> )</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARIES    <span class="string">"@Sophus_LIBRARIES@"</span> )</span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARY      <span class="string">"@Sophus_LIBRARIES@"</span> )</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARY_DIR  <span class="string">"@Sophus_LIBRARY_DIR@"</span> )</span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARY_DIRS <span class="string">"@Sophus_LIBRARY_DIR@"</span> )</span><br></pre></td></tr></table></figure>
+<ul>
+<li>替换生成的文件 SophusConfig.cmake</li>
+</ul>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">################################################################################</span></span><br><span class="line"><span class="comment"># Sophus source dir</span></span><br><span class="line"><span class="keyword">set</span>( Sophus_SOURCE_DIR <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">################################################################################</span></span><br><span class="line"><span class="comment"># Sophus build dir</span></span><br><span class="line"><span class="keyword">set</span>( Sophus_DIR <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus/build"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">################################################################################</span></span><br><span class="line"><span class="keyword">set</span>( Sophus_INCLUDE_DIR  <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus;/usr/local/include/eigen3"</span> )</span><br><span class="line"><span class="keyword">set</span>( Sophus_INCLUDE_DIRS  <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus;/usr/local/include/eigen3"</span> )</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARIES    <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus/build/libSophus.so"</span> )</span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARY      <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus/build/libSophus.so"</span> )</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARY_DIR  <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus/build"</span> )</span><br><span class="line"><span class="keyword">set</span>( Sophus_LIBRARY_DIRS <span class="string">"/home/gcj/LocalUser/Repo/slam/Sophus/build"</span> )</span><br></pre></td></tr></table></figure>
+<p>有了 SophusConfig.cmake 文件，在 CMakeLists.txt 中，通过 <code>export(PACKAGE Sophus)</code>，就可以在 $HOME 目录下的 ./cmake/packages/ 自动生成了 Sophus 文件夹和一个文件，文件内容为当前包含 SophusConfig.cmake 文件的地址。一般就是 Sophus 源码包中自己建立的 build 文件夹的绝对地址。</p>
+<h4 id="6、参考资料"><a href="#6、参考资料" class="headerlink" title="6、参考资料"></a>6、参考资料</h4><p>1、<a href="https://www.cnblogs.com/newneul/p/8364924.html" target="_blank" rel="noopener">https://www.cnblogs.com/newneul/p/8364924.html</a></p>
+<p>2、<a href="http://ceres-solver.org/installation.html#" target="_blank" rel="noopener">http://ceres-solver.org/installation.html#</a></p>
+<p>3、<a href="http://ceres-solver.org/installation.html#customizing-the-build" target="_blank" rel="noopener">http://ceres-solver.org/installation.html#customizing-the-build</a></p>
+<p>4、<a href="https://blog.csdn.net/bytxl/article/details/50637277" target="_blank" rel="noopener">https://blog.csdn.net/bytxl/article/details/50637277</a></p>
+<p>5、<a href="https://cmake.org/cmake/help/v3.2/manual/cmake-packages.7.html#user-package-registry" target="_blank" rel="noopener">https://cmake.org/cmake/help/v3.2/manual/cmake-packages.7.html#user-package-registry</a></p>
+<p>6、<a href="https://cmake.org/cmake/help/v3.0/command/find_package.html" target="_blank" rel="noopener">https://cmake.org/cmake/help/v3.0/command/find_package.html</a></p>
+
       
     </div>
     
@@ -534,236 +569,96 @@
     
 <div>
   
+    <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------Thank you for reading this article!-------------</div>
+    
+</div>
+
+  
 </div>
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
 
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.png" alt="南乡子 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    南乡子
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://cslam.cn/archives/7dcb4bb9.html" title="ubuntu16.04 Ceres 安装及 find_package() 命令使用原理">http://cslam.cn/archives/7dcb4bb9.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
     
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://cslam.cn/archives/c9f565b5.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="南乡子">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/slogo.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="南乡子">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/archives/c9f565b5.html" itemprop="url">CMake 两种变量原理</a></h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-08T18:49:59+08:00">
-                2018-10-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/tool/" itemprop="url" rel="index">
-                    <span itemprop="name">tool</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
+            <a href="/tags/cmake/" rel="tag"><i class="fa fa-tag"></i> cmake</a>
           
-
+            <a href="/tags/ceres/" rel="tag"><i class="fa fa-tag"></i> ceres</a>
           
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/archives/c9f565b5.html#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/archives/c9f565b5.html" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/archives/c9f565b5.html" class="leancloud_visitors" data-flag-title="CMake 两种变量原理">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  3.5k
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  14
-                </span>
-              
-            </div>
-          
-
-          
-
         </div>
-      </header>
-    
+      
 
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
+      
       
       
 
       
-        
-          <hr>
-<p>摘要:</p>
-<p>本文记录一下 CMake 变量的定义、原理及其使用。CMake 变量包含 <strong>Normal Variables、Cache Variables。</strong>通过 set 指令可以设置两种不同的变量。也可以在 CMake 脚本中使用和设置环境变量。<code>set(ENV{&lt;variable&gt;} &lt;value&gt;...)</code>，本文重点讲述 CMake 脚本语言特有的两种变量。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/archives/c9f565b5.html#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/archives/c9f565b5.html" rel="next" title="CMake 两种变量原理">
+                <i class="fa fa-chevron-left"></i> CMake 两种变量原理
+              </a>
+            
           </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-<div>
-  
-</div>
-    
 
-    
+          <span class="post-nav-divider"></span>
 
-    
-
-    <footer class="post-footer">
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
       
 
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -773,10 +668,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -784,6 +680,13 @@
 
 
           
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
 
         </div>
         
@@ -804,8 +707,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -906,6 +818,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、安装相应的依赖"><span class="nav-text">1、安装相应的依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、编译安装（Ceres-有一些编译选项可参考官网）"><span class="nav-text">2、编译安装（Ceres 有一些编译选项可参考官网）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-、默认路径-选项安装（标准路径）"><span class="nav-text">(1)、默认路径/选项安装（标准路径）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-、指定路径-选项安装（非标准路径）"><span class="nav-text">(2)、指定路径/选项安装（非标准路径）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-、非标准安装的另一种替代品-ceres-特有的选项"><span class="nav-text">(3)、非标准安装的另一种替代品(ceres 特有的选项)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-、通用的方式-仅编译不安装，适合多版本"><span class="nav-text">(4)、通用的方式(仅编译不安装，适合多版本)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-、总结"><span class="nav-text">(5)、总结</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、推广"><span class="nav-text">3、推广</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4、技巧"><span class="nav-text">4、技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-、Module-模式-查找Findxxx-cmake-文件"><span class="nav-text">(1)、Module 模式(查找Findxxx.cmake 文件)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-、Config-模式-查找-xxxConfig-cmake-文件）"><span class="nav-text">(2)、Config 模式(查找 xxxConfig.cmake 文件）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-、总结"><span class="nav-text">(3)、总结</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5、拓展"><span class="nav-text">5、拓展</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6、参考资料"><span class="nav-text">6、参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -1068,6 +996,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
@@ -1586,26 +1518,6 @@
   
 
   
-  
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-        tex2jax: {
-          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-          processEscapes: true,
-          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-        }
-      });
-    </script>
-
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax(), i;
-        for (i=0; i < all.length; i += 1) {
-          all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-      });
-    </script>
-    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
   
 
 
